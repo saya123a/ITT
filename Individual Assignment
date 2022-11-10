@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <signal.h>
+
+void sigint_handler(int sig)
+{
+	printf(“Wrong Button!”);
+}
+
+int main(void)
+{
+	void sigint_handler(int sig);
+	if(signal(SIGINT, sigint_handler) == SIG_ERR)
+	{
+		perror(“signal”);
+		exit(1);
+  }
+
+  int pipefds[2];
+  char buffer[20];
+
+  if(pipe(pipefds) == -1)
+  {
+  	perror(“pipe”);
+  	exit(EXIT_FAILURE);
+  }
+
+  char name[20];
+
+  printf(“Enter your parent name: ”);
+  scanf(“%s”, name);
+
+  printf(“Writing your parent name to pipe…\n”);
+  write(pipefds[1], &name, sizeof(name));
+  printf(“Done.\n\n”);
+
+  printf(“Reading your parent from pipe…\n”);
+  read(pipefds[0], &buffer, sizeof(buffer));
+  printf(“Done.\n\n”);
+
+  printf(“Your parent name from pipe: %s\n”, buffer);
+
+  return EXIT_SUCCESS;
+}
