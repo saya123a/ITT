@@ -1,0 +1,53 @@
+#Server:
+
+import threading
+import random
+import socket
+
+#Array of quotes
+quotes = ["One day, all your hard work will pay off",
+"The earlier you start working on something, the earlier you will see results",
+"Life is short. Live it. Fear is natural. Face it. Memory is powerful. Use it",
+"Do what is right, not what is easy",
+"It’s never too late to be what you might have been"]
+
+def handle_client(client_socket):
+        quote = random.choice(quotes)
+        client_socket.send(quote.encode())
+        client_socket.close()
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+#Bind to any ip and default port
+server.bind(('', 8888))
+
+#Listening mode
+server.listen(5)
+
+while True:
+        client, addr = server.accept()
+        print(f"[SERVER] Accepted connection from {addr[0]}:{addr[1]}")
+        client_handler = threading.Thread(target=handle_client, args=(client,))
+        client_handler.start()
+
+
+
+
+
+
+
+
+#Client:
+
+import socket
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+#Connect to the server
+client.connect(("192.168.0.8", 8888))
+
+response = client.recv(4096).decode()
+print(response)
+
+#Close the connection with server
+client.close()
