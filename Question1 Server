@@ -1,0 +1,65 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#define PORT 8103
+#define SA struct sockaddr
+
+int main(int argc, char* argv[])
+{
+        int socket_desc, client_sock, c, read_size;
+        struct sockaddr_in server, client;
+        int random_number;
+        srand(time(0));
+
+        //Create socket
+        socket_desc = socket(AF_INET, SOCK_STREAM, 0);
+        if(socket_desc == -1)
+        {
+                printf("[SERVER] Could not create socket!");
+                return 1;
+        }
+        puts("[SERVER] Socket created");
+
+        //Prepare the sockaddr_in structure
+        server.sin_family = AF_INET;
+        server.sin_addr.s_addr = INADDR_ANY;
+        server.sin_port = htons(PORT);
+
+        //Bind the socket
+        if(bind(socket_desc, (SA*)&server, sizeof(server)) < 0)
+        {
+                perror("[SERVER] Bind failed. Error!");
+                return 1;
+        }
+        puts("[SERVER] Bind done");
+        
+        //Listen to the socket
+        listen(socket_desc, 5);
+        puts("[SERVER] Waiting for incoming connections...");
+
+        c = sizeof(struct sockaddr_in);
+
+        //Accept connection from an incoming client
+        client_sock = accept(socket_desc, (SA*)&client, (socklen_t*)&c);
+        if(client_sock < 0)
+        {
+                perror("[SERVER] Accept failed!");
+                return 1;
+        }
+        puts("[SERVER] Connection accepted");
+
+        //Generate random number
+        random_number = (rand() % (999 - 100 + 1) + 100);
+
+        //Send random number to client
+        write(client_sock, &random_number, sizeof(random_number));
+
+        //Close the socket
+        close(client_sock);
+        close(socket_desc);
+        return 0;
+}
