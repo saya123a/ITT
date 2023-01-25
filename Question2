@@ -1,0 +1,79 @@
+#Server:
+
+import socket
+from _thread import *
+
+#Socket object
+s = socket.socket()
+
+host = ''
+port = 4313 #Default port
+ThreadCount = 0
+
+try:
+        #Bind to any ip and default port
+        s.bind((host, port))
+except socket.error as e:
+        print(str(e))
+
+print('[SERVER] Waiting for a connection..')
+#Listening mode
+s.listen(5)
+
+def threaded_client(connection):
+        connection.send(str.encode('[SERVER] Welcome to the server'))
+        while True:
+                data = connection.recv(2048)
+                if not data:
+                        break
+                fahrenheit = int(data.decode('utf-8'))
+                celsius = (fahrenheit - 32) * (5/9)
+                reply = '[SERVER] Current temperature in celsius: ' + str(celsius>
+                connection.sendall(str.encode(reply))
+        connection.close()
+while True:
+        #Establish a connection with client
+        Client, address = s.accept()
+        print('[SERVER] Connected to: ' + address[0] + ':' + str(address[1]))
+
+        start_new_thread(threaded_client, (Client, ))
+        ThreadCount += 1
+        print('[SERVER] Thread Number: ' + str(ThreadCount))
+
+#Close the connection with client
+s.close()
+
+
+
+
+
+#Client:
+
+import socket
+
+#Socket object
+c = socket.socket()
+
+host = '192.168.0.8'
+port = 4313 #Default port
+
+print('[CLIENT] Waiting for a connection')
+
+try:
+        #Connect to the server
+        c.connect((host, port))
+except socket.error as e:
+        print(str(e))
+
+Response = c.recv(1024)
+print(Response.decode('utf-8'))
+
+while True:
+        fahrenheit = int(input("[CLIENT] Enter current temperature in Fahrenheit: >
+        c.sendall(str.encode(str(fahrenheit)))
+
+        Response = c.recv(1024)
+        print(Response.decode('utf-8'))
+
+#Close the connection with server
+c.close()
