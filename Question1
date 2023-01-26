@@ -12,7 +12,7 @@
 
 int main(int argc, char* argv[])
 {
-        int socket_desc, client_sock, c, read_size;
+        int socket_desc, client_sock, c;
         struct sockaddr_in server, client;
         int random_number;
         srand(time(0));
